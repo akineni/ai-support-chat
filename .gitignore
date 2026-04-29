@@ -24,3 +24,10 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# ===================
+# Scribe
+# ===================
+/.scribe
+/public/docs
+/public/vendor/scribe

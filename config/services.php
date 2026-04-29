@@ -35,4 +35,27 @@ return [
         ],
     ],
 
+    'cloudinary' => [
+        'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+        'api_key'    => env('CLOUDINARY_API_KEY'),
+        'api_secret' => env('CLOUDINARY_API_SECRET'),
+    ],
+
+    // Which AI provider to use: "anthropic" or "openai"
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'anthropic'),
+    ],
+
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+    ],
+
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+    ],
+
+    'document_extraction' => [
+        'enabled' => env('DOCUMENT_EXTRACTION_ENABLED', false),
+    ],
+
 ];
