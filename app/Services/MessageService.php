@@ -2,9 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\ConversationStatus;
 use App\Enums\MessageSenderType;
-use App\Events\ConversationTakenOver;
 use App\Events\MessageSent;
 use App\Exceptions\ConflictException;
 use App\Exceptions\ConversationClosedException;
@@ -103,15 +101,6 @@ class MessageService
             'conversation_id' => $conversation->id,
             'sender_type'     => MessageSenderType::AGENT,
             'agent_id'        => $agentId,
-            'body'            => $body,
-        ]);
-    }
-
-    private function persistAiMessage(Conversation $conversation, string $body): Message
-    {
-        return $this->messageRepository->create([
-            'conversation_id' => $conversation->id,
-            'sender_type'     => MessageSenderType::AI,
             'body'            => $body,
         ]);
     }
