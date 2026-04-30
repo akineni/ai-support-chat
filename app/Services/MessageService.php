@@ -16,6 +16,7 @@ use App\Repositories\Contracts\ConversationRepositoryInterface;
 use App\Repositories\Contracts\MessageRepositoryInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\ProcessAiReply;
 
 class MessageService
 {
@@ -52,13 +53,9 @@ class MessageService
                 return $customerMessage->refresh();
             }
 
-            return $this->generateAndPersistAiReply(
-                $conversation,
-                $body,
-                $attachments['imageUrls'],
-                $attachments['fileNames'],
-                $attachments['extractedContent']
-            );
+            $this->dispatchAiReply($conversation, $body, $attachments);
+
+            return $customerMessage->refresh();
         });
     }
 
@@ -117,55 +114,6 @@ class MessageService
             'sender_type'     => MessageSenderType::AI,
             'body'            => $body,
         ]);
-    }
-
-    // -------------------------------------------------------
-    // Private — AI Reply
-    // -------------------------------------------------------
-
-    private function generateAndPersistAiReply(
-        Conversation $conversation,
-        string $customerBody,
-        array $imageUrls,
-        array $fileNames,
-        array $extractedContent = []
-    ): Message {
-        $history    = $this->messageRepository->getHistoryForAi($conversation);
-        $aiReplyRaw = $this->aiChatService->generateReply(
-            $conversation,
-            $history,
-            $customerBody,
-            $imageUrls,
-            $fileNames,
-            $extractedContent
-        );
-
-        $shouldEscalate = $this->aiChatService->shouldEscalate($aiReplyRaw);
-        $cleanReply     = $this->aiChatService->cleanResponse($aiReplyRaw);
-
-        $aiMessage = $this->persistAiMessage($conversation, $cleanReply);
-
-        $this->broadcastMessage($aiMessage);
-
-        if ($shouldEscalate) {
-            $this->escalateConversation($conversation);
-        }
-
-        return $aiMessage->refresh();
-    }
-
-    // -------------------------------------------------------
-    // Private — Escalation
-    // -------------------------------------------------------
-
-    private function escalateConversation(Conversation $conversation): void
-    {
-        $this->conversationRepository->updateStatus(
-            $conversation,
-            ConversationStatus::PENDING_HANDOVER
-        );
-
-        broadcast(new ConversationTakenOver($conversation->fresh()))->toOthers();
     }
 
     // -------------------------------------------------------
@@ -283,5 +231,19 @@ class MessageService
             'file_size'      => $file->getSize(),
             'is_image'       => $isImage,
         ];
+    }
+
+    private function dispatchAiReply(
+        Conversation $conversation,
+        string $body,
+        array $attachments
+    ): void {
+        ProcessAiReply::dispatch(
+            $conversation->id,
+            $body,
+            $attachments['imageUrls'],
+            $attachments['fileNames'],
+            $attachments['extractedContent']
+        );
     }
 }
