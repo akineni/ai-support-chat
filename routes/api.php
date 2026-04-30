@@ -23,6 +23,9 @@ Route::prefix('v1')->group(function () {
         Route::post('/', [Customer\ChatController::class, 'start']);
         Route::get('/{sessionToken}/messages', [Customer\ChatController::class, 'history']);
         Route::post('/{sessionToken}/messages', [Customer\ChatController::class, 'sendMessage']);
+
+        // Customer typing indicator
+        Route::post('/{sessionToken}/typing', [Customer\ChatController::class, 'typing']);
     });
 
     // -------------------------------------------------------
@@ -34,6 +37,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/conversations/{uuid}/takeover', [Agent\ChatController::class, 'takeover']);
         Route::post('/conversations/{uuid}/release', [Agent\ChatController::class, 'release']);
         Route::post('/conversations/{uuid}/reply', [Agent\ChatController::class, 'reply']);
-    });
 
+        // Agent typing indicator
+        Route::post('/conversations/{uuid}/typing', [Agent\ChatController::class, 'typing']);
+    });
 });

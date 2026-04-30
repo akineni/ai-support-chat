@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Enums\MessageSenderType;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\SendMessageRequest;
@@ -12,6 +13,7 @@ use App\Http\Resources\MessageResource;
 use App\Services\ConversationService;
 use App\Services\MessageService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * @group Customer Chat
@@ -118,7 +120,8 @@ class ChatController extends Controller
      *       ],
      *       "created_at": "2025-01-01T00:00:10.000000Z"
      *     }
-     *   ],
+     *   ],        Route::get('/{sessionToken}/messages', [Customer\ChatController::class, 'history']);
+
      *   "meta": {
      *     "current_page": 1,
      *     "from": 1,
@@ -231,5 +234,23 @@ class ChatController extends Controller
             'Message sent',
             new MessageResource($reply)
         );
+    }
+
+    /**
+     * Broadcast customer typing status
+     *
+     * @unauthenticated
+     * @urlParam sessionToken string required Example: 550e8400-e29b-41d4-a716-446655440000
+     * @bodyParam is_typing bool required Example: true
+     */
+    public function typing(Request $request, string $sessionToken): JsonResponse
+    {
+        $this->conversationService->broadcastTyping(
+            $sessionToken,
+            MessageSenderType::CUSTOMER->value,
+            (bool) $request->input('is_typing', false)
+        );
+
+        return ApiResponse::success('OK');
     }
 }

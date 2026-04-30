@@ -2,23 +2,27 @@
 
 namespace App\Events;
 
-use App\Models\Conversation;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ConversationTakenOver implements ShouldBroadcast
+class UserTyping implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(public Conversation $conversation) {}
+    public function __construct(
+        public readonly string $conversationUuid,
+        public readonly string $senderType,
+        public readonly bool   $isTyping,
+    ) {}
 
     /**
      * Get the channels the event should broadcast on.
@@ -29,27 +33,21 @@ class ConversationTakenOver implements ShouldBroadcast
     {
         return [
             new Channel('agent.dashboard'),
-            new Channel('conversation.' . $this->conversation->uuid),
+            new Channel('conversation.' . $this->conversationUuid),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'conversation.taken_over';
+        return 'user.typing';
     }
 
     public function broadcastWith(): array
     {
         return [
-            'conversation_uuid' => $this->conversation->uuid,
-            'mode'              => $this->conversation->mode->value,
-            'status'            => $this->conversation->status->value,
-            'assigned_agent'    => $this->conversation->assignedAgent
-                ? [
-                    'id'   => $this->conversation->assignedAgent->id,
-                    'name' => $this->conversation->assignedAgent->name,
-                ]
-                : null,
+            'conversation_uuid' => $this->conversationUuid,
+            'sender_type'       => $this->senderType,
+            'is_typing'         => $this->isTyping,
         ];
     }
 }

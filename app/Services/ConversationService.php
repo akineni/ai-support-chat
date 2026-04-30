@@ -129,6 +129,25 @@ class ConversationService
         return $this->conversationRepository->allForAgent($resolvedStatus, $perPage);
     }
 
+    public function broadcastTyping(
+        string $identifier,
+        string $senderType,
+        bool $isTyping,
+        bool $isUuid = false
+    ): void {
+        $conversation = $isUuid
+            ? $this->getConversationByUuid($identifier)
+            : $this->getConversationBySessionToken($identifier);
+
+        broadcast(new \App\Events\UserTyping(
+            $conversation->uuid,
+            $senderType,
+            $isTyping
+        ))->toOthers();
+    }
+
+
+
     // -------------------------------------------------------
     // Private — Mode Switching
     // -------------------------------------------------------

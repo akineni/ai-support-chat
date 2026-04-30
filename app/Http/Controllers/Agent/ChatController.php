@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Agent;
 
+use App\Enums\MessageSenderType;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Agent\AgentReplyRequest;
@@ -322,5 +323,22 @@ class ChatController extends Controller
             'Reply sent',
             new MessageResource($message)
         );
+    }
+
+    /**
+     * Broadcast agent typing status
+     * @urlParam uuid string required Example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+     * @bodyParam is_typing bool required Example: true
+     */
+    public function typing(Request $request, string $uuid): JsonResponse
+    {
+        $this->conversationService->broadcastTyping(
+            $uuid,
+            MessageSenderType::AGENT->value,
+            (bool) $request->input('is_typing', false),
+            true
+        );
+
+        return ApiResponse::success('OK');
     }
 }

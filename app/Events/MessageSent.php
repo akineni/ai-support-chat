@@ -28,8 +28,8 @@ class MessageSent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('conversation.' . $this->message->conversation->uuid),
             new Channel('agent.dashboard'),
+            new Channel('conversation.' . $this->message->conversation->uuid),
         ];
     }
 
