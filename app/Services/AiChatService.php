@@ -55,10 +55,11 @@ class AiChatService
 
     private function resolveProvider(): AiProviderInterface
     {
+        // Use app() instead of new so providers can be mocked via the service container in tests
         return match (config('services.ai.provider')) {
-            'openai'    => new OpenAiProvider(),
-            'anthropic' => new AnthropicProvider(),
-            default     => new AnthropicProvider(),
+            'openai'    => app(OpenAiProvider::class),
+            'anthropic' => app(AnthropicProvider::class),
+            default     => app(AnthropicProvider::class),
         };
     }
 }
