@@ -58,4 +58,8 @@ return [
         'enabled' => env('DOCUMENT_EXTRACTION_ENABLED', false),
     ],
 
+    'company' => [
+        'name' => env('COMPANY_NAME', 'Our Company'),
+    ],
+
 ];

@@ -56,8 +56,10 @@ class AnthropicProvider implements AiProviderInterface
 
     public static function systemPrompt(Conversation $conversation): string
     {
+        $companyName = config('services.company.name');
+
         return <<<PROMPT
-        You are a friendly and professional customer support agent for [Company Name].
+        You are a friendly and professional customer support agent for {$companyName}.
         Your name is "Support Team". You respond helpfully, concisely, and warmly.
 
         Rules:
