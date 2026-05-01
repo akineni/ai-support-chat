@@ -20,12 +20,16 @@ Route::prefix('v1')->group(function () {
     // Customer routes - no auth, identified by session_token
     // -------------------------------------------------------
     Route::prefix('chat')->group(function () {
-        Route::post('/', [Customer\ChatController::class, 'start']);
-        Route::get('/{sessionToken}/messages', [Customer\ChatController::class, 'history']);
-        Route::post('/{sessionToken}/messages', [Customer\ChatController::class, 'sendMessage']);
+        Route::post('/', [Customer\ChatController::class, 'start'])
+            ->middleware('throttle:start-conversation');
 
-        // Customer typing indicator
-        Route::post('/{sessionToken}/typing', [Customer\ChatController::class, 'typing']);
+        Route::prefix('/{sessionToken}')->group(function () {
+            Route::get('/messages', [Customer\ChatController::class, 'history']);
+            Route::post('/messages', [Customer\ChatController::class, 'sendMessage'])
+                ->middleware('throttle:send-message');
+            Route::post('/typing', [Customer\ChatController::class, 'typing'])
+                ->middleware('throttle:typing');
+        });
     });
 
     // -------------------------------------------------------

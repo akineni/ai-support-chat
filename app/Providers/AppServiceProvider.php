@@ -9,6 +9,9 @@ use App\Repositories\Eloquent\AttachmentRepository;
 use App\Repositories\Eloquent\ConversationRepository;
 use App\Repositories\Eloquent\MessageRepository;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +30,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('start-conversation', function (Request $request) {
+            return Limit::perHour(10)->by($request->ip());
+        });
+
+        RateLimiter::for('send-message', function (Request $request) {
+            return Limit::perMinute(20)->by($request->ip());
+        });
+
+        RateLimiter::for('typing', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
+        });
     }
 }
