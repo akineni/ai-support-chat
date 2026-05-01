@@ -348,11 +348,25 @@ app/
 
 ## Testing
 
+Create a dedicated test database first:
+
 ```bash
-composer run test
-# or
-php artisan test
+mysql -u root -p -e "CREATE DATABASE ai_support_chat_test;"
 ```
+
+Then run the suite:
+
+```bash
+php artisan test
+
+# Run a specific file
+php artisan test tests/Feature/CustomerChatTest.php
+
+# Run a specific test
+php artisan test --filter test_agent_can_take_over_a_conversation
+```
+
+The suite covers auth, customer chat, agent chat, rate limiting, and AI escalation logic — 40 tests, 105 assertions.
 
 ---
 
