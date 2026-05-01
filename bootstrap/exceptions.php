@@ -50,6 +50,10 @@ return function ($exceptions) {
         return ApiResponse::error($message, 429);
     });
 
+    $exceptions->render(function (InvalidArgumentException $e, Request $request) {
+        return ApiResponse::error($e->getMessage(), 400);
+    });
+
     /*
     |--------------------------------------------------------------------------
     | Fallback Exception Handler
@@ -65,5 +69,4 @@ return function ($exceptions) {
 
         return ApiResponse::error('Internal Server Error', 500);
     });
-
 };
