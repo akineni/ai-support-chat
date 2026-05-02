@@ -53,11 +53,24 @@ class ConversationRepository implements ConversationRepositoryInterface
     public function allForAgent(?ConversationStatus $status = null, int $perPage = 20): LengthAwarePaginator
     {
         return Conversation::with([
-                'assignedAgent',
-                'messages' => fn($q) => $q->latest()->limit(1)->with('attachments'),
-            ])
+            'assignedAgent',
+            'messages' => fn($q) => $q->latest()->limit(1)->with('attachments'),
+        ])
             ->when($status, fn($q) => $q->where('status', $status))
             ->latest()
             ->paginate($perPage);
+    }
+
+    public function getUnreadCounts(): array
+    {
+        return Conversation::withCount([
+            'messages' => fn($q) => $q->where('sender_type', 'customer')
+                ->where('is_read', false),
+        ])
+            ->get()
+            ->mapWithKeys(fn($conv) => [
+                $conv->uuid => $conv->messages_count,
+            ])
+            ->toArray();
     }
 }

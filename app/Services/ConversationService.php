@@ -146,7 +146,10 @@ class ConversationService
         ))->toOthers();
     }
 
-
+    public function getUnreadCounts(): array
+    {
+        return $this->conversationRepository->getUnreadCounts();
+    }
 
     // -------------------------------------------------------
     // Private — Mode Switching

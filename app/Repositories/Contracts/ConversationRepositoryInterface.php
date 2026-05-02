@@ -24,4 +24,6 @@ interface ConversationRepositoryInterface
     public function updateStatus(Conversation $conversation, ConversationStatus $status): Conversation;
 
     public function allForAgent(?ConversationStatus $status = null, int $perPage = 20): LengthAwarePaginator;
+
+    public function getUnreadCounts(): array;
 }

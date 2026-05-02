@@ -37,6 +37,8 @@ Route::prefix('v1')->group(function () {
     // -------------------------------------------------------
     Route::prefix('agent')->middleware('auth:sanctum')->group(function () {
         Route::get('/conversations', [Agent\ChatController::class, 'index']);
+        Route::get('/conversations/unread-counts', [Agent\ChatController::class, 'unreadCounts']);
+
         Route::get('/conversations/{uuid}/messages', [Agent\ChatController::class, 'messages']);
         Route::post('/conversations/{uuid}/takeover', [Agent\ChatController::class, 'takeover']);
         Route::post('/conversations/{uuid}/release', [Agent\ChatController::class, 'release']);

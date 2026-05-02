@@ -153,4 +153,14 @@ class ChatController extends Controller
 
         return ApiResponse::success('OK');
     }
+
+    /**
+     * Get unread message counts per conversation
+     */
+    public function unreadCounts(): JsonResponse
+    {
+        $counts = $this->conversationService->getUnreadCounts();
+
+        return ApiResponse::success('Unread counts retrieved successfully', $counts);
+    }
 }
