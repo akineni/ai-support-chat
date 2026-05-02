@@ -20,10 +20,18 @@ class MessageRepository implements MessageRepositoryInterface
 
     public function getConversationHistory(Conversation $conversation): LengthAwarePaginator
     {
+        $perPage = (int) config('chat.messages_per_page', 50);
+
         return $conversation->messages()
             ->with('attachments')
-            ->oldest()
-            ->paginate(50);
+            ->latest()        // order by created_at DESC to get last {$perPage} messages
+            ->paginate($perPage)
+            ->tap(function ($paginator) {
+                // Reverse the collection so messages display oldest → newest
+                $paginator->setCollection(
+                    $paginator->getCollection()->reverse()->values()
+                );
+            });
     }
 
     public function getHistoryForAi(Conversation $conversation): Collection
