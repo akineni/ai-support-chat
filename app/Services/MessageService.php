@@ -177,12 +177,14 @@ class MessageService
             if ($isImage) {
                 $imageUrls[] = $url;
             } else {
-                $fileNames[] = $file->getClientOriginalName();
+                $originalName = $file->getClientOriginalName();
+
+                $fileNames[] = $originalName;
                 $extracted   = $this->documentExtractor->extract($file);
 
                 if ($extracted) {
                     $extractedContent[] = [
-                        'file_name' => $file->getClientOriginalName(),
+                        'file_name' => $originalName,
                         'content'   => $extracted,
                     ];
                 }
