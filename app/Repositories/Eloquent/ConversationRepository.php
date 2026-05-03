@@ -29,6 +29,11 @@ class ConversationRepository implements ConversationRepositoryInterface
             ->first();
     }
 
+    public function findById(int $id): ?Conversation
+    {
+        return Conversation::find($id);
+    }
+
     public function updateMode(
         Conversation $conversation,
         ConversationMode $mode,

@@ -36,14 +36,13 @@ class MessageRepository implements MessageRepositoryInterface
 
     public function getHistoryForAi(Conversation $conversation): Collection
     {
+        $limit = (int) config('chat.ai_history_limit', 20);
+
         return $conversation->messages()
-            ->whereIn('sender_type', [
-                MessageSenderType::CUSTOMER->value,
-                MessageSenderType::AI->value,
-            ])
             ->with('attachments')
             ->latest()
-            ->limit(20)
+            ->skip(1) // exclude the latest message - it's appended separately as the current user turn with full content blocks (images, extracted text, file names)
+            ->limit($limit)
             ->get()
             ->reverse()
             ->values();

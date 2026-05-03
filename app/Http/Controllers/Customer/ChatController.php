@@ -69,7 +69,7 @@ class ChatController extends Controller
     /**
      * Send a message
      *
-     * AI replies automatically in AI mode. Supports up to 5 attachments (jpg, png, gif, webp, pdf, doc, docx, txt, zip — max 10MB each).
+     * AI replies automatically in AI mode. Supports up to 5 attachments (jpg, png, gif, webp, pdf, doc, docx, txt, zip - max 10MB each).
      *
      * @unauthenticated
      *

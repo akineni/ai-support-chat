@@ -20,7 +20,7 @@ class OpenAiProvider implements AiProviderInterface
     }
 
     // -------------------------------------------------------
-    // Public — Entry Point
+    // Public - Entry Point
     // -------------------------------------------------------
 
     public function generateReply(
@@ -51,7 +51,7 @@ class OpenAiProvider implements AiProviderInterface
     }
 
     // -------------------------------------------------------
-    // Private — Request Building
+    // Private - Request Building
     // -------------------------------------------------------
 
     private function headers(): array
@@ -93,12 +93,27 @@ class OpenAiProvider implements AiProviderInterface
         array $extractedContent
     ): array {
         /*
-         * OpenAI does not have a dedicated system parameter like Anthropic.
-         * The system prompt is passed as the first message with role "system".
-         */
+        * OpenAI does not have a dedicated system parameter like Anthropic.
+        * The system prompt is passed as the first message with role "system".
+        *
+        * Each message follows this shape:
+        *   [
+        *       'role'    => 'system' | 'user' | 'assistant',
+        *       'content' => string | array of blocks,
+        *   ]
+        *
+        * Content can be a plain string (history messages) or an array of blocks
+        * when the message contains attachments (current user turn):
+        *   [
+        *       ['type' => 'image_url', 'image_url' => ['url' => '...']],  // image attachment
+        *       ['type' => 'text',      'text'       => '...'],             // message text
+        *   ]
+        */
         $messages   = [$this->buildSystemMessage($conversation)];
         $messages   = array_merge($messages, $this->buildHistoryMessages($history));
-        $messages[] = $this->buildUserTurn($newMessage, $imageUrls, $fileNames, $extractedContent);
+        $messages[] = $this->buildUserTurn($newMessage, $imageUrls, $fileNames, $extractedContent); // append current message at the end
+
+        Log::debug('OpenAI messages payload: ' . json_encode($messages, JSON_PRETTY_PRINT));
 
         return $messages;
     }
@@ -113,6 +128,7 @@ class OpenAiProvider implements AiProviderInterface
 
     private function buildHistoryMessages(Collection $history): array
     {
+        // OpenAI only accepts 'user' and 'assistant' roles. Translate our internal sender types accordingly.
         return $history->map(function ($msg) {
             return [
                 'role'    => $msg->sender_type === MessageSenderType::CUSTOMER ? 'user' : 'assistant',
@@ -173,7 +189,7 @@ class OpenAiProvider implements AiProviderInterface
     }
 
     // -------------------------------------------------------
-    // Private — Error Handling
+    // Private - Error Handling
     // -------------------------------------------------------
 
     private function logError($response): void

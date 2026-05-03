@@ -5,7 +5,7 @@ namespace App\Services\AiProviders;
 class MessageContextBuilder
 {
     // -------------------------------------------------------
-    // Public — Entry Point
+    // Public - Entry Point
     // -------------------------------------------------------
 
     public static function buildTextContent(
@@ -16,8 +16,10 @@ class MessageContextBuilder
         $text = $newMessage;
 
         if (!empty($extractedContent)) {
+            // Extraction succeeded: pass the file content so the AI can read it
             $text .= self::buildExtractedContentContext($extractedContent);
         } elseif (!empty($fileNames)) {
+            // Extraction failed or disabled: at minimum tell the AI the file name so it can escalate
             $text .= self::buildFileNamesContext($fileNames);
         }
 
@@ -25,7 +27,7 @@ class MessageContextBuilder
     }
 
     // -------------------------------------------------------
-    // Private — Context Builders
+    // Private - Context Builders
     // -------------------------------------------------------
 
     private static function buildExtractedContentContext(array $extractedContent): string

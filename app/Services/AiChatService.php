@@ -18,7 +18,7 @@ class AiChatService
     }
 
     // -------------------------------------------------------
-    // Public — Entry Point
+    // Public - Entry Point
     // -------------------------------------------------------
 
     public function generateReply(
@@ -46,11 +46,13 @@ class AiChatService
 
     public function cleanResponse(string $aiResponse): string
     {
+        // The AI embeds [ESCALATE] as a signal to trigger human handover.
+        // Strip it before persisting so the customer never sees it in the message.
         return trim(str_replace('[ESCALATE]', '', $aiResponse));
     }
 
     // -------------------------------------------------------
-    // Private — Provider Resolution
+    // Private - Provider Resolution
     // -------------------------------------------------------
 
     private function resolveProvider(): AiProviderInterface

@@ -15,6 +15,8 @@ interface ConversationRepositoryInterface
 
     public function findByUuid(string $uuid): ?Conversation;
 
+    public function findById(int $id): ?Conversation;
+
     public function updateMode(
         Conversation $conversation,
         ConversationMode $mode,

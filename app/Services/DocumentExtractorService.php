@@ -10,7 +10,7 @@ use Smalot\PdfParser\Parser;
 class DocumentExtractorService
 {
     // -------------------------------------------------------
-    // Public — Entry Point
+    // Public - Entry Point
     // -------------------------------------------------------
 
     public function extract(UploadedFile $file): ?string
@@ -27,7 +27,7 @@ class DocumentExtractorService
     }
 
     // -------------------------------------------------------
-    // Private — Guards
+    // Private - Guards
     // -------------------------------------------------------
 
     private function isEnabled(): bool
@@ -49,7 +49,7 @@ class DocumentExtractorService
     }
 
     // -------------------------------------------------------
-    // Private — Extraction Router
+    // Private - Extraction Router
     // -------------------------------------------------------
 
     private function attemptExtraction(UploadedFile $file): ?string
@@ -74,7 +74,7 @@ class DocumentExtractorService
     }
 
     // -------------------------------------------------------
-    // Private — Extractors
+    // Private - Extractors
     // -------------------------------------------------------
 
     private function extractTxt(UploadedFile $file): string
@@ -141,7 +141,7 @@ class DocumentExtractorService
     }
 
     // -------------------------------------------------------
-    // Private — Logging
+    // Private - Logging
     // -------------------------------------------------------
 
     private function logExtractionFailure(UploadedFile $file, \Throwable $e): void

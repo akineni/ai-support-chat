@@ -23,7 +23,7 @@ class ConversationService
     ) {}
 
     // -------------------------------------------------------
-    // Public — Conversation Lifecycle
+    // Public - Conversation Lifecycle
     // -------------------------------------------------------
 
     public function startConversation(array $data): array
@@ -69,7 +69,7 @@ class ConversationService
     }
 
     // -------------------------------------------------------
-    // Public — Lookups
+    // Public - Lookups
     // -------------------------------------------------------
 
     public function getConversationBySessionToken(string $sessionToken): Conversation
@@ -95,7 +95,7 @@ class ConversationService
     }
 
     // -------------------------------------------------------
-    // Public — Message History
+    // Public - Message History
     // -------------------------------------------------------
 
     public function getConversationHistoryForCustomer(string $sessionToken): LengthAwarePaginator
@@ -117,7 +117,7 @@ class ConversationService
     }
 
     // -------------------------------------------------------
-    // Public — Agent Dashboard
+    // Public - Agent Dashboard
     // -------------------------------------------------------
 
     public function getAllConversationsForAgent(
@@ -152,7 +152,7 @@ class ConversationService
     }
 
     // -------------------------------------------------------
-    // Private — Mode Switching
+    // Private - Mode Switching
     // -------------------------------------------------------
 
     private function switchToHumanMode(Conversation $conversation, int $agentId): Conversation
@@ -179,7 +179,7 @@ class ConversationService
     }
 
     // -------------------------------------------------------
-    // Private — Guards
+    // Private - Guards
     // -------------------------------------------------------
 
     private function assertNotInHumanMode(Conversation $conversation): void
@@ -197,7 +197,7 @@ class ConversationService
     }
 
     // -------------------------------------------------------
-    // Private — Broadcasting
+    // Private - Broadcasting
     // -------------------------------------------------------
 
     private function broadcastTakeover(Conversation $conversation): void
@@ -211,7 +211,7 @@ class ConversationService
     }
 
     // -------------------------------------------------------
-    // Private — Helpers
+    // Private - Helpers
     // -------------------------------------------------------
 
     private function resolveStatus(?string $status): ?ConversationStatus

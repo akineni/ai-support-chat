@@ -27,7 +27,7 @@ class MessageService
     ) {}
 
     // -------------------------------------------------------
-    // Public — Customer
+    // Public - Customer
     // -------------------------------------------------------
 
     public function handleCustomerMessage(
@@ -58,7 +58,7 @@ class MessageService
     }
 
     // -------------------------------------------------------
-    // Public — Agent
+    // Public - Agent
     // -------------------------------------------------------
 
     public function handleAgentReply(
@@ -80,7 +80,7 @@ class MessageService
     }
 
     // -------------------------------------------------------
-    // Private — Message Persistence
+    // Private - Message Persistence
     // -------------------------------------------------------
 
     private function persistCustomerMessage(Conversation $conversation, string $body): Message
@@ -106,7 +106,7 @@ class MessageService
     }
 
     // -------------------------------------------------------
-    // Private — Broadcasting
+    // Private - Broadcasting
     // -------------------------------------------------------
 
     private function broadcastMessage(Message $message): void
@@ -117,7 +117,7 @@ class MessageService
     }
 
     // -------------------------------------------------------
-    // Private — Attachments
+    // Private - Attachments
     // -------------------------------------------------------
 
     private function handleAttachments(Message $message, array $files): array
@@ -137,7 +137,7 @@ class MessageService
         $attachmentData   = [];
 
         /*
-        * ATTACHMENT HANDLING — WHAT THE AI CAN AND CANNOT READ
+        * ATTACHMENT HANDLING - WHAT THE AI CAN AND CANNOT READ
         * -------------------------------------------------------
         * All file types (images, documents, archives) are uploaded to Cloudinary
         * and stored in the database for the customer and agent to access.
@@ -149,7 +149,7 @@ class MessageService
         *    The AI can see, describe, and reason about the image content.
         *
         * DOCUMENTS (pdf, doc, docx, txt)
-        *    The AI cannot fetch or read files from a URL — it only receives
+        *    The AI cannot fetch or read files from a URL - it only receives
         *    text and images as structured input. Passing a Cloudinary URL for
         *    a .txt or .docx file is meaningless to the AI; it has no mechanism
         *    to download and read it.
@@ -157,7 +157,7 @@ class MessageService
         *    When DOCUMENT_EXTRACTION_ENABLED=true, text is extracted server-side
         *    and passed as plain text in the message context so the AI can read it.
         *    When disabled, the AI is informed of the file name only and escalates
-        *    to a human agent — which is the recommended default for sensitive
+        *    to a human agent - which is the recommended default for sensitive
         *    documents (e.g. pension documents, IDs, certificates).
         *
         * ARCHIVES (zip)
@@ -170,19 +170,25 @@ class MessageService
 
         foreach ($files as $file) {
             /** @var UploadedFile $file */
+
+            // Upload to Cloudinary; $isImage tells us how to pass it to the AI
             [$url, $isImage] = $this->uploadFile($file);
 
+            // Stage attachment metadata for bulk DB insert later
             $attachmentData[] = $this->buildAttachmentData($file, $url, $isImage);
 
             if ($isImage) {
+                // AI can read images directly via vision API
                 $imageUrls[] = $url;
             } else {
                 $originalName = $file->getClientOriginalName();
 
+                // AI can't fetch files by URL, so we pass the name at minimum
                 $fileNames[] = $originalName;
                 $extracted   = $this->documentExtractor->extract($file);
 
                 if ($extracted) {
+                    // Extracted content supersedes the file name: AI gets the actual content instead
                     $extractedContent[] = [
                         'file_name' => $originalName,
                         'content'   => $extracted,
@@ -234,7 +240,18 @@ class MessageService
             $body,
             $attachments['imageUrls'],
             $attachments['fileNames'],
-            $attachments['extractedContent']
+            $this->sanitizeExtractedContent($attachments['extractedContent'])
         );
+    }
+
+    private function sanitizeExtractedContent(array $extractedContent): array
+    {
+        return array_map(function ($item) {
+            return [
+                'file_name' => $item['file_name'],
+                // Drop invalid UTF-8 bytes that would break JSON serialization when queuing
+                'content'   => iconv('UTF-8', 'UTF-8//IGNORE', $item['content']),
+            ];
+        }, $extractedContent);
     }
 }

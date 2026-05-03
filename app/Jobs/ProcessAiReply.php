@@ -31,7 +31,7 @@ class ProcessAiReply implements ShouldQueue
     ) {}
 
     // -------------------------------------------------------
-    // Public — Job Entry Points
+    // Public - Job Entry Points
     // -------------------------------------------------------
 
     public function handle(
@@ -39,7 +39,7 @@ class ProcessAiReply implements ShouldQueue
         MessageRepositoryInterface      $messageRepository,
         ConversationRepositoryInterface $conversationRepository,
     ): void {
-        $conversation = $this->resolveConversation();
+        $conversation = $this->resolveConversation($conversationRepository);
 
         if (!$conversation) {
             return;
@@ -70,16 +70,16 @@ class ProcessAiReply implements ShouldQueue
 
         $this->persistAndBroadcastFallbackMessage();
 
-        $this->escalateOnFailure();
+        $this->escalateOnFailure(app(ConversationRepositoryInterface::class));
     }
 
     // -------------------------------------------------------
-    // Private — Conversation Resolution
+    // Private - Conversation Resolution
     // -------------------------------------------------------
 
-    private function resolveConversation(): ?Conversation
+    private function resolveConversation(ConversationRepositoryInterface $conversationRepository): ?Conversation
     {
-        $conversation = Conversation::find($this->conversationId);
+        $conversation = $conversationRepository->findById($this->conversationId);
 
         if (!$conversation) {
             Log::warning('ProcessAiReply: conversation not found', [
@@ -97,7 +97,7 @@ class ProcessAiReply implements ShouldQueue
     }
 
     // -------------------------------------------------------
-    // Private — AI Reply
+    // Private - AI Reply
     // -------------------------------------------------------
 
     private function fetchAiReply(
@@ -121,6 +121,7 @@ class ProcessAiReply implements ShouldQueue
         MessageRepositoryInterface $messageRepository,
         string                     $aiReplyRaw,
     ): void {
+        // Raw response may contain [ESCALATE] - clean it before the customer sees it
         $cleanReply = app(AiChatService::class)->cleanResponse($aiReplyRaw);
 
         $aiMessage = $messageRepository->create([
@@ -133,7 +134,7 @@ class ProcessAiReply implements ShouldQueue
     }
 
     // -------------------------------------------------------
-    // Private — Escalation
+    // Private - Escalation
     // -------------------------------------------------------
 
     private function escalate(
@@ -148,22 +149,22 @@ class ProcessAiReply implements ShouldQueue
         broadcast(new ConversationTakenOver($conversation->fresh()))->toOthers();
     }
 
-    private function escalateOnFailure(): void
+    private function escalateOnFailure(ConversationRepositoryInterface $conversationRepository): void
     {
-        $conversation = Conversation::find($this->conversationId);
+        $conversation = $conversationRepository->findById($this->conversationId);
 
         if (!$conversation) {
             return;
         }
 
-        app(ConversationRepositoryInterface::class)->updateStatus(
+        $conversationRepository->updateStatus(
             $conversation,
             ConversationStatus::PENDING_HANDOVER
         );
     }
 
     // -------------------------------------------------------
-    // Private — Fallback
+    // Private - Fallback
     // -------------------------------------------------------
 
     private function persistAndBroadcastFallbackMessage(): void
@@ -179,7 +180,7 @@ class ProcessAiReply implements ShouldQueue
     }
 
     // -------------------------------------------------------
-    // Private — Broadcasting
+    // Private - Broadcasting
     // -------------------------------------------------------
 
     private function broadcastTyping(bool $isTyping): void
@@ -188,7 +189,7 @@ class ProcessAiReply implements ShouldQueue
     }
 
     // -------------------------------------------------------
-    // Private — Logging
+    // Private - Logging
     // -------------------------------------------------------
 
     private function logFailure(\Throwable $exception): void

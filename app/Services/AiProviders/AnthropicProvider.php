@@ -20,7 +20,7 @@ class AnthropicProvider implements AiProviderInterface
     }
 
     // -------------------------------------------------------
-    // Public — Entry Point
+    // Public - Entry Point
     // -------------------------------------------------------
 
     public function generateReply(
@@ -51,7 +51,7 @@ class AnthropicProvider implements AiProviderInterface
     }
 
     // -------------------------------------------------------
-    // Public — System Prompt
+    // Public - System Prompt
     // -------------------------------------------------------
 
     public static function systemPrompt(Conversation $conversation): string
@@ -81,7 +81,7 @@ class AnthropicProvider implements AiProviderInterface
     }
 
     // -------------------------------------------------------
-    // Private — Request Building
+    // Private - Request Building
     // -------------------------------------------------------
 
     private function headers(): array
@@ -190,7 +190,7 @@ class AnthropicProvider implements AiProviderInterface
     }
 
     // -------------------------------------------------------
-    // Private — Error Handling
+    // Private - Error Handling
     // -------------------------------------------------------
 
     private function logError($response): void
