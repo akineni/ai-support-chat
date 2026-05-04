@@ -27,4 +27,13 @@ class StartConversationRequest extends FormRequest
             'customer_email' => ['nullable', 'email', 'max:255'],
         ];
     }
+
+    // Override the validationData method to include the authenticated user's name and email
+    // public function validationData(): array
+    // {
+    //     return array_merge(parent::validationData(), [
+    //         'customer_name'  => $this->user()->full_name,
+    //         'customer_email' => $this->user()->email,
+    //     ]);
+    // }
 }
