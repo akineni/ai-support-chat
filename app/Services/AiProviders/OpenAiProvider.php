@@ -113,7 +113,7 @@ class OpenAiProvider implements AiProviderInterface
         $messages   = array_merge($messages, $this->buildHistoryMessages($history));
         $messages[] = $this->buildUserTurn($newMessage, $imageUrls, $fileNames, $extractedContent); // append current message at the end
 
-        Log::debug('OpenAI messages payload: ' . json_encode($messages, JSON_PRETTY_PRINT));
+        // Log::debug('OpenAI messages payload: ' . json_encode($messages, JSON_PRETTY_PRINT));
 
         return $messages;
     }
