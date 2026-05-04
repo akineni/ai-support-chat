@@ -41,20 +41,24 @@ class MessageService
             throw new ConversationClosedException();
         }
 
-        return DB::transaction(function () use ($conversation, $body, $files) {
+        $attachments = ['imageUrls' => [], 'fileNames' => [], 'extractedContent' => []];
+
+        $customerMessage = DB::transaction(function () use ($conversation, $body, $files, &$attachments) {
             $customerMessage = $this->persistCustomerMessage($conversation, $body);
             $attachments     = $this->handleAttachments($customerMessage, $files);
 
             $this->broadcastMessage($customerMessage);
 
-            if ($conversation->isHumanMode()) {
-                return $customerMessage->refresh();
-            }
-
-            $this->dispatchAiReply($conversation, $body, $attachments);
-
             return $customerMessage->refresh();
         });
+
+        if ($conversation->isHumanMode()) {
+            return $customerMessage;
+        }
+
+        $this->dispatchAiReply($conversation, $body, $attachments);
+
+        return $customerMessage;
     }
 
     // -------------------------------------------------------
