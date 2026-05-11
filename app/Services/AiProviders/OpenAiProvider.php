@@ -2,13 +2,11 @@
 
 namespace App\Services\AiProviders;
 
-use App\Enums\MessageSenderType;
 use App\Models\Conversation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 
-class OpenAiProvider implements AiProviderInterface
+class OpenAiProvider extends BaseAiProvider
 {
     private string $apiKey;
     private string $model  = 'gpt-4o';
@@ -42,7 +40,7 @@ class OpenAiProvider implements AiProviderInterface
             ));
 
         if ($response->failed()) {
-            $this->logError($response);
+            $this->logError($response, 'OpenAI');
 
             return $this->escalationFallback();
         }
@@ -51,10 +49,10 @@ class OpenAiProvider implements AiProviderInterface
     }
 
     // -------------------------------------------------------
-    // Private - Request Building
+    // Protected - Provider Specific
     // -------------------------------------------------------
 
-    private function headers(): array
+    protected function headers(): array
     {
         return [
             'Authorization' => 'Bearer ' . $this->apiKey,
@@ -62,29 +60,7 @@ class OpenAiProvider implements AiProviderInterface
         ];
     }
 
-    private function buildPayload(
-        Conversation $conversation,
-        Collection $history,
-        string $newMessage,
-        array $imageUrls,
-        array $fileNames,
-        array $extractedContent
-    ): array {
-        return [
-            'model'      => $this->model,
-            'max_tokens' => 1024,
-            'messages'   => $this->buildMessages(
-                $conversation,
-                $history,
-                $newMessage,
-                $imageUrls,
-                $fileNames,
-                $extractedContent
-            ),
-        ];
-    }
-
-    private function buildMessages(
+    protected function buildPayload(
         Conversation $conversation,
         Collection $history,
         string $newMessage,
@@ -93,76 +69,34 @@ class OpenAiProvider implements AiProviderInterface
         array $extractedContent
     ): array {
         /*
-        * OpenAI does not have a dedicated system parameter like Anthropic.
-        * The system prompt is passed as the first message with role "system".
-        *
-        * Each message follows this shape:
-        *   [
-        *       'role'    => 'system' | 'user' | 'assistant',
-        *       'content' => string | array of blocks,
-        *   ]
-        *
-        * Content can be a plain string (history messages) or an array of blocks
-        * when the message contains attachments (current user turn):
-        *   [
-        *       ['type' => 'image_url', 'image_url' => ['url' => '...']],  // image attachment
-        *       ['type' => 'text',      'text'       => '...'],             // message text
-        *   ]
-        */
-        $messages   = [$this->buildSystemMessage($conversation)];
-        $messages   = array_merge($messages, $this->buildHistoryMessages($history));
-        $messages[] = $this->buildUserTurn($newMessage, $imageUrls, $fileNames, $extractedContent); // append current message at the end
-
-        // Log::debug('OpenAI messages payload: ' . json_encode($messages, JSON_PRETTY_PRINT));
-
-        return $messages;
-    }
-
-    private function buildSystemMessage(Conversation $conversation): array
-    {
+         * OpenAI does not have a dedicated system parameter like Anthropic.
+         * The system prompt is passed as the first message with role "system".
+         *
+         * Each message follows this shape:
+         *   [
+         *       'role'    => 'system' | 'user' | 'assistant',
+         *       'content' => string | array of blocks,
+         *   ]
+         *
+         * Content can be a plain string (history messages) or an array of blocks
+         * when the message contains attachments (current user turn):
+         *   [
+         *       ['type' => 'image_url', 'image_url' => ['url' => '...']],  // image attachment
+         *       ['type' => 'text',      'text'       => '...'],             // message text
+         *   ]
+         */
         return [
-            'role'    => 'system',
-            'content' => AnthropicProvider::systemPrompt($conversation),
+            'model'      => $this->model,
+            'max_tokens' => 1024,
+            'messages'   => array_merge(
+                [$this->buildSystemMessage($conversation)],
+                $this->buildHistoryMessages($history),
+                [$this->buildUserTurn($newMessage, $imageUrls, $fileNames, $extractedContent)]
+            ),
         ];
     }
 
-    private function buildHistoryMessages(Collection $history): array
-    {
-        // OpenAI only accepts 'user' and 'assistant' roles. Translate our internal sender types accordingly.
-        return $history->map(function ($msg) {
-            return [
-                'role'    => $msg->sender_type === MessageSenderType::CUSTOMER ? 'user' : 'assistant',
-                'content' => $msg->body ?? '',
-            ];
-        })->values()->toArray();
-    }
-
-    private function buildUserTurn(
-        string $newMessage,
-        array $imageUrls,
-        array $fileNames,
-        array $extractedContent
-    ): array {
-        return [
-            'role'    => 'user',
-            'content' => $this->buildContentBlocks($newMessage, $imageUrls, $fileNames, $extractedContent),
-        ];
-    }
-
-    private function buildContentBlocks(
-        string $newMessage,
-        array $imageUrls,
-        array $fileNames,
-        array $extractedContent
-    ): array {
-        $blocks = array_merge([], $this->buildImageBlocks($imageUrls));
-
-        $blocks[] = $this->buildTextBlock($newMessage, $fileNames, $extractedContent);
-
-        return $blocks;
-    }
-
-    private function buildImageBlocks(array $imageUrls): array
+    protected function buildImageBlocks(array $imageUrls): array
     {
         /*
          * IMAGE ATTACHMENTS
@@ -177,32 +111,15 @@ class OpenAiProvider implements AiProviderInterface
         ], $imageUrls);
     }
 
-    private function buildTextBlock(
-        string $newMessage,
-        array $fileNames,
-        array $extractedContent
-    ): array {
+    // -------------------------------------------------------
+    // Private - OpenAI Specific
+    // -------------------------------------------------------
+
+    private function buildSystemMessage(Conversation $conversation): array
+    {
         return [
-            'type' => 'text',
-            'text' => MessageContextBuilder::buildTextContent($newMessage, $fileNames, $extractedContent),
+            'role'    => 'system',
+            'content' => self::systemPrompt($conversation),
         ];
-    }
-
-    // -------------------------------------------------------
-    // Private - Error Handling
-    // -------------------------------------------------------
-
-    private function logError($response): void
-    {
-        Log::error('OpenAI API error', [
-            'status'   => $response->status(),
-            'response' => $response->body(),
-        ]);
-    }
-
-    private function escalationFallback(): string
-    {
-        return 'I\'m sorry, I\'m having trouble responding right now. '
-             . 'Let me connect you with a human agent. [ESCALATE]';
     }
 }

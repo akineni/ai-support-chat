@@ -10,7 +10,7 @@ AI Support Chat provides a fully headless JSON API powering a two-sided support 
 
 - **Customers** open a conversation anonymously (no account needed) and are immediately served by an AI agent.
 - **Human agents** monitor an authenticated dashboard, can take over any conversation in one click, reply directly to customers, and hand back to the AI when done.
-- **Real-time updates** — messages, typing indicators, and handover events are all pushed via WebSockets (Laravel Reverb + Laravel Echo/Pusher-js), so both sides always see the latest state without polling.
+- **Real-time updates** - messages, typing indicators, and handover events are all pushed via WebSockets (Laravel Reverb + Laravel Echo/Pusher-js), so both sides always see the latest state without polling.
 
 ---
 
@@ -90,7 +90,7 @@ Set `AI_PROVIDER=anthropic` or `AI_PROVIDER=openai` in `.env`. Both providers sh
 | | `ai` mode | `human` mode |
 |---|---|---|
 | `open` | AI is actively replying | Agent is actively replying |
-| `pending_handover` | AI flagged for escalation | — |
+| `pending_handover` | AI flagged for escalation | - |
 | `closed` | No new messages accepted | No new messages accepted |
 
 ---
@@ -103,8 +103,8 @@ Set `AI_PROVIDER=anthropic` or `AI_PROVIDER=openai` in `.env`. Both providers sh
 | Authentication | Laravel Sanctum (bearer tokens) |
 | Real-time | Laravel Reverb (WebSockets) |
 | Queue | Laravel Queue (database driver by default) |
-| AI — Anthropic | `claude-haiku-4-5-20251001` via HTTP |
-| AI — OpenAI | `gpt-4o` via HTTP |
+| AI - Anthropic | `claude-haiku-4-5-20251001` via HTTP |
+| AI - OpenAI | `gpt-4o` via HTTP |
 | File storage | Cloudinary |
 | PDF parsing | `smalot/pdfparser` |
 | DOCX parsing | `phpoffice/phpword` |
@@ -203,10 +203,10 @@ composer run dev
 ```
 
 This concurrently starts:
-- `php artisan serve` — HTTP server
-- `php artisan queue:listen` — queue worker (processes AI replies; auto-restarts after code changes, unlike `queue:work`)
-- `php artisan reverb:start` — WebSocket server (add `--debug` to log all incoming/outgoing frames)
-- `npm run dev` — Vite HMR
+- `php artisan serve` - HTTP server
+- `php artisan queue:listen` - queue worker (processes AI replies; auto-restarts after code changes, unlike `queue:work`)
+- `php artisan reverb:start` - WebSocket server (add `--debug` to log all incoming/outgoing frames)
+- `npm run dev` - Vite HMR
 
 ---
 
@@ -224,10 +224,10 @@ Then visit `/docs`.
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
-| POST | `/auth/login` | — | Agent login → returns bearer token |
+| POST | `/auth/login` | - | Agent login → returns bearer token |
 | POST | `/auth/logout` | Bearer | Revoke current token |
 
-### Customer Chat (no auth — identified by `session_token`)
+### Customer Chat (no auth - identified by `session_token`)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -244,7 +244,7 @@ POST /api/v1/chat
   "customer_email": "john@example.com"
 }
 ```
-Returns a `session_token` — store this client-side; it identifies all future requests for this conversation.
+Returns a `session_token` - store this client-side; it identifies all future requests for this conversation.
 
 **Send a message with attachments:**
 ```
@@ -366,7 +366,7 @@ php artisan test tests/Feature/CustomerChatTest.php
 php artisan test --filter test_agent_can_take_over_a_conversation
 ```
 
-The suite covers auth, customer chat, agent chat, rate limiting, and AI escalation logic — 40 tests, 105 assertions.
+The suite covers auth, customer chat, agent chat, rate limiting, and AI escalation logic - 40 tests, 105 assertions.
 
 ---
 

@@ -162,7 +162,7 @@ class MessageService
         *    and passed as plain text in the message context so the AI can read it.
         *    When disabled, the AI is informed of the file name only and escalates
         *    to a human agent - which is the recommended default for sensitive
-        *    documents (e.g. pension documents, IDs, certificates).
+        *    documents (e.g. documents, IDs, certificates).
         *
         * ARCHIVES (zip)
         *    No meaningful content can be extracted or passed to the AI.

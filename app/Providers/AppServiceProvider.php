@@ -41,5 +41,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('typing', function (Request $request) {
             return Limit::perMinute(60)->by($request->ip());
         });
+
+        // No knowledge source registered.
+        // NullKnowledgeSource is used automatically - chatbot works without any knowledge base.
     }
 }

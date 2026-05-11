@@ -56,7 +56,7 @@ class MessageContextBuilder
          * When DOCUMENT_EXTRACTION_ENABLED=false, the AI cannot read file content.
          * We inform it of the file name only so it can acknowledge the attachment
          * and guide the customer to a human agent for review.
-         * This is the recommended default for sensitive documents such as pension
+         * This is the recommended default for sensitive documents such as
          * documents, IDs, and certificates.
          */
         $fileList = implode(', ', $fileNames);

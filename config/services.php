@@ -41,9 +41,9 @@ return [
         'api_secret' => env('CLOUDINARY_API_SECRET'),
     ],
 
-    // Which AI provider to use: "anthropic" or "openai"
     'ai' => [
-        'provider' => env('AI_PROVIDER', 'anthropic'),
+        'provider' => env('AI_PROVIDER', 'anthropic'), // Which AI provider to use: "anthropic" or "openai"
+        'knowledge_cache_ttl' => env('KNOWLEDGE_CACHE_TTL', 3600),
     ],
 
     'anthropic' => [
@@ -59,7 +59,8 @@ return [
     ],
 
     'company' => [
-        'name' => env('COMPANY_NAME', 'Our Company'),
+        'name'  => env('COMPANY_NAME'),
+        'scope' => env('COMPANY_SCOPE'),
     ],
 
 ];
